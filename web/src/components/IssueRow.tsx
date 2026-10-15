@@ -4,6 +4,7 @@ import { StatusIcon } from './StatusIcon'
 import { LabelChip } from './LabelChip'
 import { Avatar } from './Avatar'
 import { formatShortDate } from '../lib/format'
+import { Link } from 'react-router'
 
 type IssueRowProps = {
   issue: Issue
@@ -11,7 +12,10 @@ type IssueRowProps = {
 
 export function IssueRow({ issue }: IssueRowProps) {
   return (
-    <div className="flex h-11 cursor-pointer items-center gap-3 px-6 hover:bg-surface">
+    <Link
+      to={`/issue/${issue.identifier}`}
+      className="flex h-11 items-center gap-3 px-6 hover:bg-surface"
+    >
       <PriorityIcon priority={issue.priority} />
       <span className="w-12 shrink-0 text-fg-subtle">{issue.identifier}</span>
       <StatusIcon status={issue.status} />
@@ -24,6 +28,6 @@ export function IssueRow({ issue }: IssueRowProps) {
         <Avatar user={issue.assignee} />
         <span className="w-12 text-right text-fg-subtle">{formatShortDate(issue.createdAt)}</span>
       </div>
-    </div>
+    </Link>
   )
 }
