@@ -1,6 +1,7 @@
 import type { Issue } from '@raven/shared'
 import { and, eq } from 'drizzle-orm'
 import { Hono } from 'hono'
+import { HTTPException } from 'hono/http-exception'
 import { db } from '../db/client.ts'
 import { issues, projects } from '../db/schema.ts'
 import { parseIdentifier } from '../lib/identifier.ts'
@@ -13,14 +14,14 @@ export const issuesRoute = new Hono()
 issuesRoute.get('/:identifier', async (c) => {
   const parsed = parseIdentifier(c.req.param('identifier'))
   if (!parsed) {
-    return c.json({ error: 'Issue not found' }, 404)
+    throw new HTTPException(404, { message: 'Issue not found' })
   }
 
   const project = await db.query.projects.findFirst({
     where: eq(projects.key, parsed.projectKey),
   })
   if (!project) {
-    return c.json({ error: 'Issue not found' }, 404)
+    throw new HTTPException(404, { message: 'Issue not found' })
   }
 
   const row = await db.query.issues.findFirst({
@@ -31,7 +32,7 @@ issuesRoute.get('/:identifier', async (c) => {
     },
   })
   if (!row) {
-    return c.json({ error: 'Issue not found' }, 404)
+    throw new HTTPException(404, { message: 'Issue not found' })
   }
 
   const result: Issue = toIssue(row, project.key)

@@ -1,9 +1,11 @@
+import { z } from 'zod'
 export const APP_NAME = 'Raven'
 
 // 数组顺序就是列表页的分组顺序
 export const ISSUE_STATUSES = ['in_progress', 'todo', 'backlog', 'done', 'canceled'] as const
 
-export type IssueStatus = (typeof ISSUE_STATUSES)[number]
+export const IssueStatusSchema = z.enum(ISSUE_STATUSES)
+export type IssueStatus = z.infer<typeof IssueStatusSchema>
 
 export const STATUS_LABEL: Record<IssueStatus, string> = {
   in_progress: 'In Progress',
@@ -14,7 +16,9 @@ export const STATUS_LABEL: Record<IssueStatus, string> = {
 }
 
 // 0 无 / 1 Urgent / 2 High / 3 Medium / 4 Low
-export type IssuePriority = 0 | 1 | 2 | 3 | 4
+
+export const IssuePrioritySchema = z.literal([0, 1, 2, 3, 4])
+export type IssuePriority = z.infer<typeof IssuePrioritySchema>
 
 export const PRIORITY_LABEL: Record<IssuePriority, string> = {
   0: 'No priority',
@@ -24,33 +28,49 @@ export const PRIORITY_LABEL: Record<IssuePriority, string> = {
   4: 'Low',
 }
 
-export type Project = {
-  id: number
-  key: string // 如 'TJ'，用于 URL 和 issue 编号
-  name: string
-}
+// ---------------------------------------------------------------------------
+// 数据结构：先定义 schema，再用 z.infer 推导出 TS 类型
+// ---------------------------------------------------------------------------
 
-export type User = {
-  id: number
-  name: string
-  avatarUrl: string | null
-}
+export const ProjectSchema = z.object({
+  id: z.number(),
+  key: z.string(),
+  name: z.string(),
+})
+export type Project = z.infer<typeof ProjectSchema>
 
-export type Label = {
-  id: number
-  name: string
-  color: string
-}
+export const UserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatarUrl: z.string().nullable(),
+})
+export type User = z.infer<typeof UserSchema>
 
-export type Issue = {
-  id: number
-  identifier: string // 如 'TJ-36'
-  title: string
-  description: string // Markdown
-  status: IssueStatus
-  priority: IssuePriority
-  assignee: User | null
-  labels: Label[]
-  createdAt: string // ISO 8601 字符串
-  updatedAt: string
+export const LabelSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  color: z.string(),
+})
+export type Label = z.infer<typeof LabelSchema>
+
+export const IssueSchema = z.object({
+  id: z.number(),
+  identifier: z.string(), // 如 'TJ-36'
+  title: z.string(),
+  description: z.string(), // Markdown
+  status: IssueStatusSchema,
+  priority: IssuePrioritySchema,
+  assignee: UserSchema.nullable(),
+  labels: z.array(LabelSchema),
+  createdAt: z.iso.datetime(), // ISO 8601 字符串
+  updatedAt: z.iso.datetime(),
+})
+export type Issue = z.infer<typeof IssueSchema>
+
+// ---------------------------------------------------------------------------
+// 接口出错时统一返回的结构
+// ---------------------------------------------------------------------------
+
+export type ApiError = {
+  error: string
 }

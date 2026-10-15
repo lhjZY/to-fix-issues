@@ -1,5 +1,6 @@
 import type { Issue } from '@raven/shared'
 import { asc, eq } from 'drizzle-orm'
+import { HTTPException } from 'hono/http-exception'
 import { Hono } from 'hono'
 import { db } from '../db/client.ts'
 import { issues, projects } from '../db/schema.ts'
@@ -16,7 +17,7 @@ projectsRoute.get('/:key/issues', async (c) => {
     where: eq(projects.key, key),
   })
   if (!project) {
-    return c.json({ error: 'Project not found' }, 404)
+    throw new HTTPException(404, { message: 'Project not found' })
   }
 
   const rows = await db.query.issues.findMany({
