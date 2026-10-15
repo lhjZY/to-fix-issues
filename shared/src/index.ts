@@ -5,6 +5,14 @@ export const ISSUE_STATUSES = ['in_progress', 'todo', 'backlog', 'done', 'cancel
 
 export type IssueStatus = (typeof ISSUE_STATUSES)[number]
 
+export const STATUS_LABEL: Record<IssueStatus, string> = {
+  in_progress: 'In Progress',
+  todo: 'Todo',
+  backlog: 'Backlog',
+  done: 'Done',
+  canceled: 'Canceled',
+}
+
 // 0 无 / 1 Urgent / 2 High / 3 Medium / 4 Low
 export type IssuePriority = 0 | 1 | 2 | 3 | 4
 
