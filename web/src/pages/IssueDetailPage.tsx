@@ -1,17 +1,21 @@
 import { ChevronRight } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { IssueProperties } from '../components/IssueProperties.tsx'
-import { mockIssues } from '../mocks/issues.ts'
 import { mockProject } from '../mocks/projects.ts'
 import { NotFoundPage } from './NotFoundPage.tsx'
+import { useIssue } from '../hooks/useIssue.ts'
 
 export function IssueDetailPage() {
   // /issue/TJ-36 → identifier 为 'TJ-36'
-  const { identifier } = useParams()
-  const issue = mockIssues.find((item) => item.identifier === identifier)
+  const { identifier = '' } = useParams()
 
-  if (!issue) {
+  const { data: issue, isError } = useIssue(identifier)
+
+  if (isError) {
     return <NotFoundPage />
+  }
+  if (!issue) {
+    return null
   }
 
   return (

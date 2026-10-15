@@ -12,12 +12,15 @@
   },
   "dependencies": {
     "@raven/shared": "^0.0.0",
+    "@tanstack/react-query": "^5.104.3",
+    "hono": "^4.13.13",
     "lucide-react": "^1.57.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router": "^8.4.0"
   },
   "devDependencies": {
+    "@raven/server": "^0.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
