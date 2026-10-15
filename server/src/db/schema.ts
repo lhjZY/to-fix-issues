@@ -1,6 +1,6 @@
 import { ISSUE_STATUSES, type IssuePriority } from '@raven/shared'
-import { sql } from 'drizzle-orm'
-import { integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { relations, sql } from 'drizzle-orm'
+import { integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // 当前时间的 ISO 8601 字符串，如 '2026-09-14T08:30:00.000Z'，和 API 中的时间格式一致
 const nowIso = sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`
@@ -39,3 +39,51 @@ export const issues = sqliteTable(
   // 同一个项目内，编号不能重复
   (table) => [uniqueIndex('issues_project_number_unique').on(table.projectId, table.number)],
 )
+
+export const labels = sqliteTable('labels', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(), // 'Feature'
+  color: text('color').notNull(), // '#bb87fc'
+})
+
+// 关联表：一行表示"某个 issue 打上了某个标签"
+export const issueLabels = sqliteTable(
+  'issue_labels',
+  {
+    issueId: integer('issue_id')
+      .notNull()
+      .references(() => issues.id, { onDelete: 'cascade' }),
+    labelId: integer('label_id')
+      .notNull()
+      .references(() => labels.id, { onDelete: 'cascade' }),
+  },
+  // 联合主键：同一个 issue 不能重复打同一个标签
+  (table) => [primaryKey({ columns: [table.issueId, table.labelId] })],
+)
+
+// ---------------------------------------------------------------------------
+// 关系定义：只给 Drizzle 的查询 API 使用，不会改变数据库结构
+// ---------------------------------------------------------------------------
+
+export const projectsRelations = relations(projects, ({ many }) => ({
+  issues: many(issues),
+}))
+
+export const usersRelations = relations(users, ({ many }) => ({
+  assignedIssues: many(issues),
+}))
+
+export const issuesRelations = relations(issues, ({ one, many }) => ({
+  project: one(projects, { fields: [issues.projectId], references: [projects.id] }),
+  assignee: one(users, { fields: [issues.assigneeId], references: [users.id] }),
+  issueLabels: many(issueLabels),
+}))
+
+export const labelsRelations = relations(labels, ({ many }) => ({
+  issueLabels: many(issueLabels),
+}))
+
+export const issueLabelsRelations = relations(issueLabels, ({ one }) => ({
+  issue: one(issues, { fields: [issueLabels.issueId], references: [issues.id] }),
+  label: one(labels, { fields: [issueLabels.labelId], references: [labels.id] }),
+}))
