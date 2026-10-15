@@ -4,5 +4,5 @@
   "singleQuote": true,
   "printWidth": 100,
   "sortPackageJson": false,
-  "ignorePatterns": ["**/package-lock.json", "**/*.md"]
+  "ignorePatterns": ["**/package-lock.json", "**/*.md", "**/drizzle/**"]
 }
