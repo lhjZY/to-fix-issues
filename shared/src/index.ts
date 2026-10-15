@@ -16,6 +16,14 @@ export const STATUS_LABEL: Record<IssueStatus, string> = {
 // 0 无 / 1 Urgent / 2 High / 3 Medium / 4 Low
 export type IssuePriority = 0 | 1 | 2 | 3 | 4
 
+export const PRIORITY_LABEL: Record<IssuePriority, string> = {
+  0: 'No priority',
+  1: 'Urgent',
+  2: 'High',
+  3: 'Medium',
+  4: 'Low',
+}
+
 export type Project = {
   id: number
   key: string // 如 'TJ'，用于 URL 和 issue 编号

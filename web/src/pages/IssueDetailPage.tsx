@@ -1,10 +1,12 @@
-import { Link, useParams } from 'react-router'
-import { mockIssues } from '../mocks/issues'
-import { NotFoundPage } from './NotFoundPage'
-import { mockProject } from '../mocks/projects'
 import { ChevronRight } from 'lucide-react'
+import { Link, useParams } from 'react-router'
+import { IssueProperties } from '../components/IssueProperties.tsx'
+import { mockIssues } from '../mocks/issues.ts'
+import { mockProject } from '../mocks/projects.ts'
+import { NotFoundPage } from './NotFoundPage.tsx'
 
 export function IssueDetailPage() {
+  // /issue/TJ-36 → identifier 为 'TJ-36'
   const { identifier } = useParams()
   const issue = mockIssues.find((item) => item.identifier === identifier)
 
@@ -13,17 +15,33 @@ export function IssueDetailPage() {
   }
 
   return (
-    <div className="p-6">
-      {/*面包屑: 项目名 > 编号 */}
-      <nav className="flex items-center gap-1 text-fg-muted">
+    <div className="flex h-full flex-col">
+      {/* 顶部栏：面包屑 */}
+      <header className="flex h-12 shrink-0 items-center gap-1 border-b border-line px-6 text-fg-muted">
         <Link to={`/projects/${mockProject.key}/issues`} className="hover:text-fg">
           {mockProject.name}
         </Link>
         <ChevronRight className="size-3.5" />
         <span className="text-fg">{issue.identifier}</span>
-      </nav>
+        <span className="truncate text-fg">{issue.title}</span>
+      </header>
 
-      <h1 className="mt-6 text-2xl font-semibold">{issue.title}</h1>
+      {/* 左右两栏，各自独立滚动 */}
+      <div className="flex min-h-0 flex-1">
+        <div className="min-w-0 flex-1 overflow-auto px-12 py-10">
+          <h1 className="text-2xl font-semibold">{issue.title}</h1>
+          {issue.description ? (
+            // 暂时按纯文本显示，第 37 步改为渲染 Markdown
+            <p className="mt-6 leading-7 whitespace-pre-wrap">{issue.description}</p>
+          ) : (
+            <p className="mt-6 text-fg-subtle">Add description…</p>
+          )}
+        </div>
+
+        <aside className="w-72 shrink-0 overflow-auto border-l border-line px-4 py-8">
+          <IssueProperties issue={issue} project={mockProject} />
+        </aside>
+      </div>
     </div>
   )
 }
