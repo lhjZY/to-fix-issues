@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { client } from '../lib/api.ts'
+import { HttpError } from '../lib/http-error.ts'
 
 // 获取单条 issue，identifier 形如 'TJ-36'
 export function useIssue(identifier: string) {
@@ -10,7 +11,7 @@ export function useIssue(identifier: string) {
         param: { identifier },
       })
       if (!res.ok) {
-        throw new Error(`Failed to load issue: ${res.status}`)
+        throw new HttpError(res.status)
       }
       return res.json()
     },

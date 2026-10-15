@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { client } from '../lib/api.ts'
+import { HttpError } from '../lib/http-error.ts'
 
 // 获取项目下的全部 issue
 export function useIssues(projectKey: string) {
@@ -11,7 +12,7 @@ export function useIssues(projectKey: string) {
         param: { key: projectKey },
       })
       if (!res.ok) {
-        throw new Error(`Failed to load issues: ${res.status}`)
+        throw new HttpError(res.status)
       }
       return res.json()
     },

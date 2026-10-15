@@ -1,21 +1,24 @@
 import { ChevronRight } from 'lucide-react'
 import { Link, useParams } from 'react-router'
+import { ErrorState } from '../components/ErrorState.tsx'
 import { IssueProperties } from '../components/IssueProperties.tsx'
+import { LoadingState } from '../components/LoadingState.tsx'
+import { useIssue } from '../hooks/useIssue.ts'
+import { isNotFound } from '../lib/http-error.ts'
 import { mockProject } from '../mocks/projects.ts'
 import { NotFoundPage } from './NotFoundPage.tsx'
-import { useIssue } from '../hooks/useIssue.ts'
 
 export function IssueDetailPage() {
   // /issue/TJ-36 → identifier 为 'TJ-36'
   const { identifier = '' } = useParams()
+  const { data: issue, isPending, isError, error, refetch } = useIssue(identifier)
 
-  const { data: issue, isError } = useIssue(identifier)
-
-  if (isError) {
-    return <NotFoundPage />
+  if (isPending) {
+    return <LoadingState />
   }
-  if (!issue) {
-    return null
+  if (isError) {
+    // 404 说明 issue 不存在；其他错误给出重试按钮
+    return isNotFound(error) ? <NotFoundPage /> : <ErrorState onRetry={() => refetch()} />
   }
 
   return (
