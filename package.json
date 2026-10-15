@@ -1,0 +1,21 @@
+{
+  "name": "raven",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "web",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n web,api -c blue,green \"npm run dev -w @raven/web\" \"npm run dev -w @raven/server\"",
+    "build": "npm run build -w @raven/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "oxfmt": "^0.73.0"
+  }
+}

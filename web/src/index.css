@@ -1,0 +1,14 @@
+:root {
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto, sans-serif;
+  color: #e6e6e8;
+  background: #141415;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  padding: 24px;
+}
