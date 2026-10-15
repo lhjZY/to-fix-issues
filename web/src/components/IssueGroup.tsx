@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { STATUS_LABEL, type Issue, type IssueStatus } from '@raven/shared'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronDown } from 'lucide-react'
 import { IssueRow } from './IssueRow.tsx'
 import { StatusIcon } from './StatusIcon.tsx'
 
@@ -9,12 +10,25 @@ type IssueGroupProps = {
 }
 
 export function IssueGroup({ status, issues }: IssueGroupProps) {
+  // 每个group记住自己的折叠状态
+  const [collapsed, setCollapsed] = useState(false)
   return (
     <section>
-      <div className="mx-2 flex h-9 items-center gap-2 rounded-md bg-surface px-4">
-        <StatusIcon status={status} />
-        <span className="font-medium">{STATUS_LABEL[status]}</span>
-        <span className="text-fg-subtle">{issues.length}</span>
+      <div className="mx-2 flex h-9 items-center gap-2 rounded-md bg-surface pr-2">
+        <button
+          type="button"
+          onClick={() => setCollapsed((prev) => !prev)}
+          aria-expanded={!collapsed}
+          className="flex h-full flex-1 items-center gap-2 pl-2"
+        >
+          <ChevronDown
+            className={`size-3.5 text-fg-subtle transition-transform ${collapsed ? '-rotate-90' : ''}`}
+          />
+          <StatusIcon status={status} />
+          <span className="font-medium">{STATUS_LABEL[status]}</span>
+          <span className="text-fg-subtle">{issues.length}</span>
+        </button>
+
         <button
           type="button"
           aria-label="New issue"
@@ -24,9 +38,7 @@ export function IssueGroup({ status, issues }: IssueGroupProps) {
         </button>
       </div>
 
-      {issues.map((issue) => (
-        <IssueRow key={issue.id} issue={issue} />
-      ))}
+      {!collapsed && issues.map((issue) => <IssueRow key={issue.id} issue={issue} />)}
     </section>
   )
 }
