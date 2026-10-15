@@ -12,6 +12,17 @@
 
   --color-accent: #5e6ad2; /* 强调色 */
 
+  /* issue 状态图标的颜色 */
+  --color-status-backlog: #95a2b3;
+  --color-status-todo: #e2e2e2;
+  --color-status-in-progress: #f2c94c;
+  --color-status-done: #5e6ad2;
+  --color-status-canceled: #95a2b3;
+
+  /* 优先级图标的颜色 */
+  --color-priority-urgent: #f2994a;
+  --color-priority-bar-off: #3d3d43; /* 未点亮的信号格 */
+
   --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto, sans-serif;
 }
 
