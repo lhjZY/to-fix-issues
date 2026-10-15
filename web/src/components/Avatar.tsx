@@ -18,7 +18,7 @@ export function Avatar({ user }: AvatarProps) {
 
   // 没有头像图片：显示名字首字母
   return (
-    <span className="flex size-5 items-center justify-center rounded-full bg-accent text-xs font-medium text-white">
+    <span className="flex size-5 items-center justify-center rounded-full bg-brand text-xs font-medium text-white">
       {user.name[0]}
     </span>
   )

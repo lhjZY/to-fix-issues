@@ -1,16 +1,23 @@
 @import 'tailwindcss';
+/* shadcn 组件需要的动画和自定义变体 */
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+/* shadcn 组件里的 dark: 样式只在 .dark 内生效；index.html 的 <html> 上加了 class="dark" */
+@custom-variant dark (&:is(.dark *));
 
 /* 主题颜色：定义后可以直接用 bg-canvas、text-fg-muted、border-line 这样的类名 */
 @theme {
   --color-canvas: #141415; /* 页面背景 */
   --color-surface: #1c1c1f; /* 卡片、分组头等稍亮的区域 */
+  --color-elevated: #26262b; /* 比 surface 再亮一级，如悬停背景 */
   --color-line: #2a2a2e; /* 边框、分割线 */
 
   --color-fg: #e6e6e8; /* 主要文字 */
   --color-fg-muted: #9a9aa1; /* 次要文字 */
   --color-fg-subtle: #6b6b73; /* 最弱的文字，如编号、日期 */
 
-  --color-accent: #5e6ad2; /* 强调色 */
+  --color-brand: #5e6ad2; /* 品牌色（原 accent，accent 这个名字让给了 shadcn） */
 
   /* issue 状态图标的颜色 */
   --color-status-backlog: #95a2b3;
@@ -26,9 +33,64 @@
   --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto, sans-serif;
 }
 
+/*
+ * shadcn 组件使用的语义化颜色（bg-background、text-muted-foreground 等）
+ * 全部指向上面已有的颜色，只维护一套色值
+ */
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-fg);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-fg);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-fg);
+  --primary: var(--color-brand);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-elevated);
+  --secondary-foreground: var(--color-fg);
+  --muted: var(--color-surface);
+  --muted-foreground: var(--color-fg-muted);
+  --accent: var(--color-elevated);
+  --accent-foreground: var(--color-fg);
+  --destructive: #eb5757;
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-brand);
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
 @layer base {
   :root {
     color-scheme: dark;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
   }
 
   body {
