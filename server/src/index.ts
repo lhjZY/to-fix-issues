@@ -4,7 +4,7 @@ import { APP_NAME } from '@raven/shared'
 import { sql } from 'drizzle-orm'
 import { db } from './db/client.ts'
 import { projectsRoute } from './routes/projects.ts'
-
+import { issuesRoute } from './routes/issues.ts'
 const app = new Hono()
 
 app.get('/api/health', async (c) => {
@@ -13,6 +13,8 @@ app.get('/api/health', async (c) => {
 })
 
 app.route('/api/projects', projectsRoute)
+app.route('/api/issues', issuesRoute)
+
 serve({ fetch: app.fetch, port: 3002 }, (info) => {
   console.log(`${APP_NAME} API listening on http://localhost:${info.port}`)
 })
