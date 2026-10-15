@@ -1,14 +1,26 @@
-:root {
-  color-scheme: dark;
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto, sans-serif;
-  color: #e6e6e8;
-  background: #141415;
+@import 'tailwindcss';
+
+/* 主题颜色：定义后可以直接用 bg-canvas、text-fg-muted、border-line 这样的类名 */
+@theme {
+  --color-canvas: #141415; /* 页面背景 */
+  --color-surface: #1c1c1f; /* 卡片、分组头等稍亮的区域 */
+  --color-line: #2a2a2e; /* 边框、分割线 */
+
+  --color-fg: #e6e6e8; /* 主要文字 */
+  --color-fg-muted: #9a9aa1; /* 次要文字 */
+  --color-fg-subtle: #6b6b73; /* 最弱的文字，如编号、日期 */
+
+  --color-accent: #5e6ad2; /* 强调色 */
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto, sans-serif;
 }
 
-body {
-  margin: 0;
-}
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
 
-main {
-  padding: 24px;
+  body {
+    @apply bg-canvas font-sans text-sm text-fg antialiased;
+  }
 }
