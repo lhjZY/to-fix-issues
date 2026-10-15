@@ -17,7 +17,8 @@
     "prepare": "husky",
     "db:generate": "npm run db:generate -w @raven/server",
     "db:migrate": "npm run db:migrate -w @raven/server",
-    "db:studio": "npm run db:studio -w @raven/server"
+    "db:studio": "npm run db:studio -w @raven/server",
+    "db:seed": "npm run db:seed -w @raven/server"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
