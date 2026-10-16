@@ -10,7 +10,7 @@ import { mockProject } from '../mocks/projects.ts'
 import { NotFoundPage } from './NotFoundPage.tsx'
 import { useUpdateIssue } from '../hooks/useUpdateIssue.ts'
 import { IssueTitle } from '../components/IssueTitle.tsx'
-
+import { MarkdownContent } from '../components/MarkdownContent.tsx'
 export function IssueDetailPage() {
   const { identifier = '' } = useParams()
   const { data: issue, isPending, isError, error, refetch } = useIssue(identifier)
@@ -57,9 +57,10 @@ function IssueDetail({ issue }: { issue: Issue }) {
               保存失败，请重试。
             </p>
           )}
-          {issue.description ? (
-            // 暂时按纯文本显示，第 37 步改为渲染 Markdown
-            <p className="mt-6 leading-7 whitespace-pre-wrap">{issue.description}</p>
+          {issue.description.trim() ? (
+            <div className="mt-6">
+              <MarkdownContent content={issue.description} />
+            </div>
           ) : (
             <p className="mt-6 text-fg-subtle">Add description…</p>
           )}
