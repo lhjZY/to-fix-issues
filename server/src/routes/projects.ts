@@ -41,7 +41,7 @@ export const projectsRoute = new Hono()
     // 先用 zod 校验请求体，不通过就直接返回 400，不会进入下面的处理函数
     zValidator('json', CreateIssueInputSchema, (result, c) => {
       if (!result.success) {
-        return c.json<ApiError>({ error: z.prettifyError(result.error) }, 400)
+        return c.json({ error: z.prettifyError(result.error) } satisfies ApiError, 400)
       }
     }),
     async (c) => {

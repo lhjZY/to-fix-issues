@@ -1,10 +1,10 @@
-import { PRIORITY_LABEL, STATUS_LABEL, type Issue, type Project } from '@raven/shared'
+import { PRIORITY_LABEL, type Issue, type Project } from '@raven/shared'
 import { Box, Tag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Avatar } from './Avatar.tsx'
 import { LabelChip } from './LabelChip.tsx'
 import { PriorityIcon } from './PriorityIcon.tsx'
-import { StatusIcon } from './StatusIcon.tsx'
+import { StatusPicker } from './StatusPicker.tsx'
 
 type PropertySectionProps = {
   title: string
@@ -46,10 +46,7 @@ export function IssueProperties({ issue, project }: IssuePropertiesProps) {
   return (
     <div className="flex flex-col gap-8">
       <PropertySection title="Properties">
-        <PropertyItem
-          icon={<StatusIcon status={issue.status} />}
-          label={STATUS_LABEL[issue.status]}
-        />
+        <StatusPicker key={issue.identifier} issue={issue} projectKey={project.key} />
         <PropertyItem
           icon={<PriorityIcon priority={issue.priority} />}
           label={PRIORITY_LABEL[issue.priority]}

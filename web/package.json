@@ -15,6 +15,7 @@
     "@raven/shared": "^0.0.0",
     "@tanstack/react-query": "^5.104.3",
     "class-variance-authority": "^0.7.1",
+    "cmdk": "^1.1.1",
     "cn": "^0.4.0",
     "hono": "^4.13.13",
     "lucide-react": "^1.57.0",

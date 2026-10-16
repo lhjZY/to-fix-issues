@@ -71,15 +71,29 @@ export type Issue = z.infer<typeof IssueSchema>
 // 请求体：新建 issue
 // ---------------------------------------------------------------------------
 
+const IssueTitleSchema = z.string().trim().min(1, '标题不能为空').max(200, '标题不能超过200个字符')
+
 export const CreateIssueInputSchema = z.object({
   // trim()：去掉首尾空格后再检查长度，全是空格的标题也不允许
-  title: z.string().trim().min(1, '标题不能为空').max(200, '标题不能超过 200 个字符'),
+  title: IssueTitleSchema,
   description: z.string().default(''),
   status: IssueStatusSchema.default('todo'),
   priority: IssuePrioritySchema.default(0),
 })
 // z.input：调用方需要传入的结构（带默认值的字段可以不传）
 export type CreateIssueInput = z.input<typeof CreateIssueInputSchema>
+
+// 修改时只传要改的字段，所以每个字段都是可选的（.partial()），并且没有默认值
+export const UpdateIssueInputSchema = z
+  .object({
+    title: IssueTitleSchema,
+    description: z.string(),
+    status: IssueStatusSchema,
+    priority: IssuePrioritySchema,
+  })
+  .partial()
+  .refine((input) => Object.keys(input).length > 0, '至少需要修改一个字段')
+export type UpdateIssueInput = z.input<typeof UpdateIssueInputSchema>
 
 // ---------------------------------------------------------------------------
 // 接口出错时统一返回的结构
