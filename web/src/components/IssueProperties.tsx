@@ -14,7 +14,7 @@ import { StatusIcon } from './StatusIcon.tsx'
 import { PropertyPicker } from './PropertyPicker.tsx'
 import { Button } from './ui/button.tsx'
 import { useLabels } from '../hooks/useLabels.ts'
-import { useUpdateIssue } from '../hooks/useUpdateIssue.ts'
+import type { useUpdateIssue } from '../hooks/useUpdateIssue.ts'
 
 type PropertySectionProps = {
   title: string
@@ -50,10 +50,10 @@ function PropertyItem({ icon, label, muted = false }: PropertyItemProps) {
 type IssuePropertiesProps = {
   issue: Issue
   project: Project
+  updateIssue: ReturnType<typeof useUpdateIssue>
 }
 
-export function IssueProperties({ issue, project }: IssuePropertiesProps) {
-  const updateIssue = useUpdateIssue(issue.identifier, project.key)
+export function IssueProperties({ issue, project, updateIssue }: IssuePropertiesProps) {
   const labelsQuery = useLabels()
 
   return (
@@ -155,17 +155,6 @@ export function IssueProperties({ issue, project }: IssuePropertiesProps) {
           </div>
         )}
       </PropertySection>
-
-      {updateIssue.isPending && (
-        <p role="status" className="px-2 text-xs text-fg-muted">
-          保存中…
-        </p>
-      )}
-      {updateIssue.isError && (
-        <p role="alert" className="px-2 text-xs text-destructive">
-          属性保存失败，请重新选择后重试。
-        </p>
-      )}
 
       <PropertySection title="Project">
         <PropertyItem icon={<Box className="size-4 text-fg-muted" />} label={project.name} />
