@@ -1,5 +1,5 @@
 import { UpdateIssueInputSchema } from '@raven/shared'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { useUpdateIssue } from '../hooks/useUpdateIssue.ts'
 import { Button } from './ui/button.tsx'
 import { Input } from './ui/input.tsx'
@@ -10,9 +10,46 @@ type IssueTitleProps = {
 }
 
 export function IssueTitle({ title, updateIssue }: IssueTitleProps) {
-  // null 表示浏览状态，字符串表示正在编辑的草稿（包括空字符串）。
   const [draft, setDraft] = useState<string | null>(null)
-  const [error, setError] = useState('')
+  const [isComposing, setIsComposing] = useState(false)
+  const [failedDraft, setFailedDraft] = useState<string | null>(null)
+  const { mutate, isPending, reset } = updateIssue
+
+  const result = draft === null ? null : UpdateIssueInputSchema.safeParse({ title: draft })
+  const nextTitle = result?.success ? result.data.title : undefined
+  const error = result && !result.success ? result.error.issues[0].message : ''
+  const canSave =
+    draft !== null && nextTitle !== undefined && nextTitle !== title && !isPending && !isComposing
+
+  // 定时保存和手动保存共用同一段逻辑。
+  const saveTitle = useCallback(() => {
+    if (
+      draft === null ||
+      nextTitle === undefined ||
+      nextTitle === title ||
+      isPending ||
+      isComposing
+    )
+      return
+    mutate(
+      { title: nextTitle },
+      {
+        onSuccess: () => {
+          setDraft(nextTitle)
+          setFailedDraft(null)
+        },
+        onError: () => setFailedDraft(draft),
+      },
+    )
+  }, [draft, nextTitle, title, isPending, isComposing, mutate])
+
+  // 防抖effect
+  useEffect(() => {
+    // 失败的同一份草稿不自动重试，避免服务器故障时不停发请求。
+    if (!canSave || draft === failedDraft) return
+    const timer = setTimeout(saveTitle, 800)
+    return () => clearTimeout(timer)
+  }, [canSave, draft, failedDraft, saveTitle])
 
   if (draft === null) {
     return (
@@ -21,11 +58,12 @@ export function IssueTitle({ title, updateIssue }: IssueTitleProps) {
           type="button"
           className="w-full rounded text-left break-words outline-none hover:bg-elevated focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait"
           aria-label={`编辑标题：${title}`}
-          disabled={updateIssue.isPending}
+          disabled={isPending}
           onClick={() => {
             setDraft(title)
-            setError('')
-            updateIssue.reset()
+            setFailedDraft(null)
+            setIsComposing(false)
+            reset()
           }}
         >
           {title}
@@ -38,21 +76,7 @@ export function IssueTitle({ title, updateIssue }: IssueTitleProps) {
     <form
       onSubmit={(event) => {
         event.preventDefault()
-        if (updateIssue.isPending) return
-        const result = UpdateIssueInputSchema.safeParse({ title: draft })
-        if (!result.success) {
-          setError(result.error.issues[0].message)
-          return
-        }
-        const nextTitle = result.data.title
-        if (nextTitle === undefined) return
-        if (nextTitle === title) {
-          setDraft(null)
-          updateIssue.reset()
-          return
-        }
-        setError('')
-        updateIssue.mutate({ title: nextTitle }, { onSuccess: () => setDraft(null) })
+        saveTitle()
       }}
       className="flex flex-col gap-2"
     >
@@ -60,24 +84,24 @@ export function IssueTitle({ title, updateIssue }: IssueTitleProps) {
         autoFocus
         aria-label="Issue 标题"
         aria-invalid={Boolean(error)}
-        aria-describedby={error ? 'issue-title-error' : undefined}
+        aria-describedby={error ? 'issue-title-error' : 'issue-title-help'}
         value={draft}
-        disabled={updateIssue.isPending}
-        onChange={(event) => {
-          setDraft(event.target.value)
-          setError('')
-        }}
+        readOnly={isPending}
+        aria-busy={isPending}
+        onChange={(event) => setDraft(event.target.value)}
+        onCompositionStart={() => setIsComposing(true)}
+        onCompositionEnd={() => setIsComposing(false)}
         onKeyDown={(event) => {
-          // 中文输入法确认候选词时，Enter 不应提交，Esc 也不应取消编辑。
+          // 确认输入法候选词时，不提交表单或结束编辑。
           if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
             if (event.key === 'Enter') event.preventDefault()
             return
           }
-          if (event.key === 'Escape' && !updateIssue.isPending) {
+          if (event.key === 'Escape' && !isPending) {
             event.preventDefault()
             setDraft(null)
-            setError('')
-            updateIssue.reset()
+            setIsComposing(false)
+            reset()
           }
         }}
       />
@@ -86,22 +110,30 @@ export function IssueTitle({ title, updateIssue }: IssueTitleProps) {
           {error}
         </p>
       )}
+      <p id="issue-title-help" className="text-xs text-fg-muted">
+        停止输入后自动保存。结束编辑只放弃尚未保存的修改。
+      </p>
+      {draft === failedDraft && (
+        <p role="alert" className="text-xs text-destructive">
+          自动保存已暂停，请重试或修改标题。
+        </p>
+      )}
       <div className="flex gap-2">
-        <Button type="submit" size="sm" disabled={updateIssue.isPending}>
-          保存
+        <Button type="submit" size="sm" disabled={!canSave}>
+          {draft === failedDraft ? '重试保存' : '立即保存'}
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          disabled={updateIssue.isPending}
+          disabled={isPending}
           onClick={() => {
             setDraft(null)
-            setError('')
-            updateIssue.reset()
+            setIsComposing(false)
+            reset()
           }}
         >
-          取消
+          结束编辑
         </Button>
       </div>
     </form>
