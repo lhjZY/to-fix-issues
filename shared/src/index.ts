@@ -90,6 +90,9 @@ export const UpdateIssueInputSchema = z
     description: z.string(),
     status: IssueStatusSchema,
     priority: IssuePrioritySchema,
+    labelIds: z
+      .array(z.number().int().positive())
+      .refine((ids) => new Set(ids).size === ids.length, '标签不能重复'),
   })
   .partial()
   .refine((input) => Object.keys(input).length > 0, '至少需要修改一个字段')

@@ -46,7 +46,7 @@ export function IssueDetailPage() {
         </div>
 
         <aside className="w-72 shrink-0 overflow-auto border-l border-line px-4 py-8">
-          <IssueProperties issue={issue} project={mockProject} />
+          <IssueProperties key={issue.identifier} issue={issue} project={mockProject} />
         </aside>
       </div>
     </div>

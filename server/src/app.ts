@@ -1,8 +1,9 @@
 import type { ApiError } from '@raven/shared'
-import { sql } from 'drizzle-orm'
+import { asc, sql } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { db } from './db/client.ts'
+import { labels } from './db/schema.ts'
 import { issuesRoute } from './routes/issues.ts'
 import { projectsRoute } from './routes/projects.ts'
 
@@ -16,6 +17,9 @@ const app = new Hono()
   })
   .route('/projects', projectsRoute)
   .route('/issues', issuesRoute)
+  .get('/labels', async (c) => {
+    return c.json(await db.select().from(labels).orderBy(asc(labels.name), asc(labels.id)))
+  })
 
 // 没有匹配到任何路由
 app.notFound((c) => {
