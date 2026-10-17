@@ -75,3 +75,49 @@
 .markdown-content hr {
   border-color: var(--color-line);
 }
+
+.markdown-content p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-fg-subtle);
+  pointer-events: none;
+}
+
+.markdown-content ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-content ul[data-type='taskList'] > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+.markdown-content ul[data-type='taskList'] > li > label {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  /* 只与首行居中，任务换行或包含子列表时也不会向下漂移。 */
+  height: 1lh;
+}
+
+.markdown-content ul[data-type='taskList'] > li > label > input {
+  display: block;
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-brand);
+}
+
+.markdown-content ul[data-type='taskList'] > li > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.markdown-content li[data-checked='true'] > div > p {
+  color: var(--color-fg-subtle);
+  text-decoration: line-through;
+}

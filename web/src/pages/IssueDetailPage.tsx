@@ -2,24 +2,26 @@ import type { Issue } from '@raven/shared'
 import { ChevronRight } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { ErrorState } from '../components/ErrorState.tsx'
+import { IssueTitle } from '../components/IssueTitle.tsx'
+import { IssueDescription } from '../components/IssueDescription.tsx'
+import { useUpdateIssue } from '../hooks/useUpdateIssue.ts'
+import { useIssueAutoSave } from '../hooks/useIssueAutoSave.ts'
 import { IssueProperties } from '../components/IssueProperties.tsx'
 import { LoadingState } from '../components/LoadingState.tsx'
 import { useIssue } from '../hooks/useIssue.ts'
 import { isNotFound } from '../lib/http-error.ts'
 import { mockProject } from '../mocks/projects.ts'
 import { NotFoundPage } from './NotFoundPage.tsx'
-import { useUpdateIssue } from '../hooks/useUpdateIssue.ts'
-import { IssueTitle } from '../components/IssueTitle.tsx'
-import { MarkdownContent } from '../components/MarkdownContent.tsx'
+
 export function IssueDetailPage() {
+  // /issue/TJ-36 → identifier 为 'TJ-36'
   const { identifier = '' } = useParams()
   const { data: issue, isPending, isError, error, refetch } = useIssue(identifier)
 
   if (isPending) {
     return <LoadingState />
   }
-
-  if (isError) {
+  if (isError && !issue) {
     // 404 说明 issue 不存在；其他错误给出重试按钮
     return isNotFound(error) ? <NotFoundPage /> : <ErrorState onRetry={() => refetch()} />
   }
@@ -30,6 +32,7 @@ export function IssueDetailPage() {
 // 等查询成功再挂载编辑区域，切换 issue 时清掉旧草稿和请求状态。
 function IssueDetail({ issue }: { issue: Issue }) {
   const updateIssue = useUpdateIssue(issue.identifier, mockProject.key)
+  const autosave = useIssueAutoSave(issue, updateIssue)
 
   return (
     <div className="flex h-full flex-col">
@@ -40,29 +43,63 @@ function IssueDetail({ issue }: { issue: Issue }) {
         </Link>
         <ChevronRight className="size-3.5" />
         <span className="text-fg">{issue.identifier}</span>
-        <span className="truncate text-fg">{issue.title}</span>
+        <span className="truncate text-fg">{autosave.draft.title}</span>
+        <span role="status" className="ml-auto shrink-0 text-xs text-fg-subtle">
+          {autosave.failed
+            ? '保存失败'
+            : updateIssue.isPending
+              ? '保存中…'
+              : autosave.dirty
+                ? '未保存'
+                : '已保存'}
+        </span>
       </header>
 
       {/* 左右两栏，各自独立滚动 */}
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-auto px-12 py-10">
-          <IssueTitle title={issue.title} updateIssue={updateIssue} />
-          {updateIssue.isPending && (
-            <p role="status" className="mt-2 text-xs text-fg-muted">
-              保存中…
-            </p>
-          )}
-          {updateIssue.isError && (
+        <div data-editor-scroll className="min-w-0 flex-1 overflow-auto px-12 py-10">
+          <IssueTitle
+            value={autosave.draft.title}
+            error={autosave.titleError}
+            onChange={(value) => autosave.change('title', value)}
+            onBlur={autosave.flush}
+            onComposingChange={autosave.setComposing}
+          />
+          {(autosave.failed || updateIssue.isError) && (
             <p role="alert" className="mt-2 text-xs text-destructive">
-              保存失败，请重试。
+              保存失败，输入内容已保留。
+              {autosave.failed && (
+                <button type="button" className="ml-2 underline" onClick={autosave.retry}>
+                  重试保存
+                </button>
+              )}
             </p>
           )}
-          {issue.description.trim() ? (
-            <div className="mt-6">
-              <MarkdownContent content={issue.description} />
+          <IssueDescription
+            value={autosave.draft.description}
+            onChange={(value) => autosave.change('description', value)}
+            onBlur={autosave.flush}
+            onComposingChange={autosave.setComposing}
+            onMenuChange={autosave.setChoosingCommand}
+          />
+          {autosave.leaving && (autosave.failed || autosave.titleError) && (
+            <div role="alert" className="mt-4 flex items-center gap-3 text-xs text-fg-muted">
+              修改尚未保存，请修正标题或重试。
+              <button
+                type="button"
+                className="underline"
+                onClick={() => autosave.blocker.reset?.()}
+              >
+                继续编辑
+              </button>
+              <button
+                type="button"
+                className="underline"
+                onClick={() => autosave.blocker.proceed?.()}
+              >
+                放弃未保存修改并离开
+              </button>
             </div>
-          ) : (
-            <p className="mt-6 text-fg-subtle">Add description…</p>
           )}
         </div>
 
