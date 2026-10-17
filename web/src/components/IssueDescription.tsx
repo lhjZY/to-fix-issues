@@ -1,33 +1,40 @@
+import Image from '@tiptap/extension-image'
 import { TaskItem, TaskList } from '@tiptap/extension-list'
 import { Placeholder } from '@tiptap/extensions'
 import { Markdown } from '@tiptap/markdown'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { useState } from 'react'
+import { useImagePaste, type ImageUploadState } from '../hooks/useImagePaste.ts'
 import { SlashMenu } from './SlashMenu.tsx'
 import { SelectionToolbar } from './SelectionToolbar.tsx'
 import './MarkdownContent.css'
 
 type IssueDescriptionProps = {
+  identifier: string
   value: string
   onChange: (value: string) => void
   onBlur: () => void
   onComposingChange: (composing: boolean) => void
   onMenuChange: (open: boolean) => void
+  onUploadStateChange: (state: ImageUploadState) => void
 }
 
 export function IssueDescription({
+  identifier,
   value,
   onChange,
   onBlur,
   onComposingChange,
   onMenuChange,
+  onUploadStateChange,
 }: IssueDescriptionProps) {
   const [initialContent] = useState(value)
   const [sourceMode, setSourceMode] = useState(false)
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ link: { openOnClick: false }, underline: false }),
+      Image,
       TaskList,
       TaskItem.configure({
         nested: true,
@@ -70,6 +77,7 @@ export function IssueDescription({
         'br',
         'del',
         'link',
+        'image',
       ])
       const parser = editor.markdown!.instance
       let unsupported = false
@@ -90,6 +98,7 @@ export function IssueDescription({
     },
     onUpdate: ({ editor }) => onChange(editor.isEmpty ? '' : editor.getMarkdown()),
   })
+  const uploadError = useImagePaste(sourceMode ? null : editor, identifier, onUploadStateChange)
 
   return (
     <section
@@ -117,6 +126,11 @@ export function IssueDescription({
           <EditorContent editor={editor} />
           <SlashMenu editor={editor} onOpenChange={onMenuChange} />
           {editor && <SelectionToolbar editor={editor} />}
+          {uploadError && (
+            <p role="alert" className="mt-3 text-xs text-destructive">
+              {uploadError}
+            </p>
+          )}
         </>
       )}
     </section>

@@ -1,3 +1,4 @@
+import Image from '@tiptap/extension-image'
 import { Markdown } from '@tiptap/markdown'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -14,6 +15,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
       StarterKit.configure({
         link: { HTMLAttributes: { target: '_blank', rel: 'noopener noreferrer' } },
       }),
+      Image,
       Markdown,
     ],
     content,

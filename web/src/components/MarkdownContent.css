@@ -76,6 +76,18 @@
   border-color: var(--color-line);
 }
 
+.markdown-content img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.markdown-content img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
+
 .markdown-content p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;

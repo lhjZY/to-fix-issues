@@ -1,11 +1,13 @@
 import type { Issue } from '@raven/shared'
 import { ChevronRight } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ErrorState } from '../components/ErrorState.tsx'
 import { IssueTitle } from '../components/IssueTitle.tsx'
 import { IssueDescription } from '../components/IssueDescription.tsx'
 import { useUpdateIssue } from '../hooks/useUpdateIssue.ts'
-import { useIssueAutoSave } from '../hooks/useIssueAutoSave.ts'
+import type { ImageUploadState } from '../hooks/useImagePaste.ts'
+import { useIssueAutosave } from '../hooks/useIssueAutosave.ts'
 import { IssueProperties } from '../components/IssueProperties.tsx'
 import { LoadingState } from '../components/LoadingState.tsx'
 import { useIssue } from '../hooks/useIssue.ts'
@@ -31,8 +33,10 @@ export function IssueDetailPage() {
 
 // 等查询成功再挂载编辑区域，切换 issue 时清掉旧草稿和请求状态。
 function IssueDetail({ issue }: { issue: Issue }) {
+  const [uploadState, setUploadState] = useState<ImageUploadState>('idle')
+  const uploading = uploadState === 'uploading'
   const updateIssue = useUpdateIssue(issue.identifier, mockProject.key)
-  const autosave = useIssueAutoSave(issue, updateIssue)
+  const autosave = useIssueAutosave(issue, updateIssue, uploadState !== 'idle')
 
   return (
     <div className="flex h-full flex-col">
@@ -45,13 +49,15 @@ function IssueDetail({ issue }: { issue: Issue }) {
         <span className="text-fg">{issue.identifier}</span>
         <span className="truncate text-fg">{autosave.draft.title}</span>
         <span role="status" className="ml-auto shrink-0 text-xs text-fg-subtle">
-          {autosave.failed
+          {autosave.failed || uploadState === 'error'
             ? '保存失败'
-            : updateIssue.isPending
-              ? '保存中…'
-              : autosave.dirty
-                ? '未保存'
-                : '已保存'}
+            : uploading
+              ? '图片上传中…'
+              : updateIssue.isPending
+                ? '保存中…'
+                : autosave.dirty
+                  ? '未保存'
+                  : '已保存'}
         </span>
       </header>
 
@@ -76,31 +82,48 @@ function IssueDetail({ issue }: { issue: Issue }) {
             </p>
           )}
           <IssueDescription
+            identifier={issue.identifier}
             value={autosave.draft.description}
             onChange={(value) => autosave.change('description', value)}
             onBlur={autosave.flush}
             onComposingChange={autosave.setComposing}
             onMenuChange={autosave.setChoosingCommand}
+            onUploadStateChange={setUploadState}
           />
-          {autosave.leaving && (autosave.failed || autosave.titleError) && (
-            <div role="alert" className="mt-4 flex items-center gap-3 text-xs text-fg-muted">
-              修改尚未保存，请修正标题或重试。
+          {autosave.leaving && uploading && (
+            <p role="status" className="mt-4 text-xs text-fg-muted">
+              正在上传图片，完成并保存后自动离开。
               <button
                 type="button"
-                className="underline"
+                className="ml-2 underline"
                 onClick={() => autosave.blocker.reset?.()}
               >
                 继续编辑
               </button>
-              <button
-                type="button"
-                className="underline"
-                onClick={() => autosave.blocker.proceed?.()}
-              >
-                放弃未保存修改并离开
-              </button>
-            </div>
+            </p>
           )}
+          {autosave.leaving &&
+            (autosave.failed || autosave.titleError || uploadState === 'error') && (
+              <div role="alert" className="mt-4 flex items-center gap-3 text-xs text-fg-muted">
+                {uploadState === 'error'
+                  ? '图片上传失败，请重新粘贴，或放弃本次上传后离开。'
+                  : '修改尚未保存，请修正标题或重试。'}
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => autosave.blocker.reset?.()}
+                >
+                  继续编辑
+                </button>
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => autosave.blocker.proceed?.()}
+                >
+                  放弃未完成内容并离开
+                </button>
+              </div>
+            )}
         </div>
 
         <aside className="w-72 shrink-0 overflow-auto border-l border-line px-4 py-8">
