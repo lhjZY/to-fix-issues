@@ -61,6 +61,18 @@ export const issueLabels = sqliteTable(
   (table) => [primaryKey({ columns: [table.issueId, table.labelId] })],
 )
 
+// 图片本身保存在磁盘，这张表只记录它属于哪个 issue 以及文件信息。
+export const attachments = sqliteTable('attachments', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  issueId: integer('issue_id')
+    .notNull()
+    .references(() => issues.id, { onDelete: 'cascade' }),
+  path: text('path').notNull().unique(), // 服务端生成的文件名，不接受用户提供的路径
+  mime: text('mime').notNull(),
+  size: integer('size').notNull(),
+  createdAt: text('created_at').notNull().default(nowIso),
+})
+
 // ---------------------------------------------------------------------------
 // 关系定义：只给 Drizzle 的查询 API 使用，不会改变数据库结构
 // ---------------------------------------------------------------------------

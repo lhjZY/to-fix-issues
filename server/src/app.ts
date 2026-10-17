@@ -6,18 +6,20 @@ import { db } from './db/client.ts'
 import { labels } from './db/schema.ts'
 import { issuesRoute } from './routes/issues.ts'
 import { projectsRoute } from './routes/projects.ts'
+import { attachmentsRoute, uploadsRoute } from './routes/attachments.ts'
 
-// 所有接口都以 /api 开头；链式写法让路由信息保留在 app 的类型里
+// 业务接口以 /api 开头，图片地址以 /uploads 开头；链式写法保留 RPC 类型。
 const app = new Hono()
-  .basePath('/api')
-  .get('/health', async (c) => {
+  .get('/api/health', async (c) => {
     // 执行一条最简单的查询，确认数据库可以连接
     await db.run(sql`select 1`)
     return c.json({ ok: true, db: 'ok' })
   })
-  .route('/projects', projectsRoute)
-  .route('/issues', issuesRoute)
-  .get('/labels', async (c) => {
+  .route('/api/projects', projectsRoute)
+  .route('/api/issues', issuesRoute)
+  .route('/api/issues', attachmentsRoute)
+  .route('/uploads', uploadsRoute)
+  .get('/api/labels', async (c) => {
     return c.json(await db.select().from(labels).orderBy(asc(labels.name), asc(labels.id)))
   })
 
